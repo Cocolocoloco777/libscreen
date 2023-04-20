@@ -32,6 +32,7 @@ typedef struct {
 
 struct _Area {
   char **character_array;
+  char *free_character;
   int x;
   int y;  
   int width;
@@ -54,19 +55,24 @@ void screen_init(int rows, int columns){
 }
 
 void screen_destroy(){
+  /*
   int i;
   for (i = 0; i < screen.n_areas; i++){
     area_destroy(screen.area[i]);
   }
+  */
+  return;
 }
 
-void area_destroy(Area *area){
+void screen_area_destroy(Area *area){
 
   if (area == NULL){
     return;
   }
 
-  free(area->character_array[0]);
+  /* Modificar */
+
+  free(area->free_character);
   free(area->character_array);
   free(area);
 }
@@ -94,7 +100,7 @@ Area *screen_area_init(int x, int y, int width, int height){
   }
 
   for(i = 0; i < height; i++){
-    area->character_array[i] = characters + (width + 1)*i;
+    area->character_array[i] = characters + 4*(width + 1)*i;
     area->character_array[i][0] = '\0';
   }
 
@@ -103,6 +109,7 @@ Area *screen_area_init(int x, int y, int width, int height){
   area->width = width;
   area->height = height;
   area->cursor = 0;
+  area->free_character = characters;
 
   screen.area[screen.n_areas] = area;
   screen.n_areas++;
@@ -129,7 +136,7 @@ int wbstrlen(char *str){
   return count;
 }
 
-char* wbstrmove(char *str, int x){
+int wbstrmove(char *str, int x){
   int i, count = 0;
 
   for (i = 0; str[i] != '\0' && count < x; i++){
@@ -146,6 +153,8 @@ char* wbstrmove(char *str, int x){
       i+= 3;
     }
   }
+
+  return i;
 }
 
 void screen_paint(){
@@ -158,15 +167,15 @@ void screen_paint(){
         if (screen.area[i_area]->x == j && i >= screen.area[i_area]->y && i < screen.area[i_area]->y + screen.area[i_area]->height){
           printf(BACKGROUND(253,253,252));
           n_char = wbstrlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]);
-          printf("%s%.*s", screen.area[i_area]->character_array[i - screen.area[i_area]->y],screen.area[i_area]->width - n_char, BLANK);
+          printf("%.*s%.*s", (int) strlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]), screen.area[i_area]->character_array[i - screen.area[i_area]->y],screen.area[i_area]->width - n_char, BLANK);
           printf(RESET);
           j = j + screen.area[i_area]->width - 1;
           break;
         }
       }
-      /* Caso no area*/
+      /* Caso no area azul : 28,152,243*/
       if (i_area == screen.n_areas){
-        printf(BACKGROUND(28,152,243));
+        printf(BACKGROUND(250,164,189));
         printf(" ");
         printf(RESET);
       }
@@ -177,23 +186,74 @@ void screen_paint(){
 }
 
 void screen_area_puts(Area *area, char *str){
+  int n_char, i, n_lines, j, move;
+  char *text;
 
- 
-  strcpy(area->character_array[area->cursor], str);
-  area->cursor++;
+  if (area == NULL || str == NULL)
+    return;
+
+  n_char = wbstrlen(str);
+
+  n_lines = (n_char / area->width) + ((n_char % area->width) != 0);
+
+  for (i = 0; i < n_lines; i++){
+    if (area->cursor == area->height){
+      text = area->character_array[0];
+      for (j = 0; j < area->height - 1; j++){
+        area->character_array[j] = area->character_array[j + 1];
+      }
+      area->character_array[area->height - 1] = text;
+      area->cursor--;
+    }
+    move = wbstrmove(str, area->width);
+    sprintf(area->character_array[area->cursor], "%.*s", move, str);
+    str = str + move;
+    area->cursor++;
+  }
 }
 
+void screen_area_clear(Area *area){
+  int i;
+
+  if (area == NULL)
+    return;
+
+  for (i = 0; i < area->height; i++){
+    area->character_array[i][0] = '\0';
+  }
+
+  area->cursor = 0;
+}
+
+void screen_area_reset_cursor(Area *area){
+  area->cursor = 0;
+}
+
+/*
 int main(){
 
-  Area *a;
+  Area *a, *b;
 
-  screen_init(10, 10);
+  screen_init(10, 20);
 
   a = screen_area_init(3,3,3,3);
+  b = screen_area_init(7,3,3,3);
 
-  screen_area_puts(a, "👃");
+  screen_area_puts(a, "a");
+  screen_area_puts(a, "o");
+  screen_area_puts(b, "bbbbb");
 
   screen_paint();
 
+  screen_area_clear(a);
+
+  screen_area_puts(a, "ooa");
+
+  screen_paint();
+
+  screen_area_destroy(a);
+
   return 0;
 }
+
+*/
