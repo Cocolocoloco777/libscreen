@@ -22,6 +22,23 @@
 
 #define BLANK "                                                                                                    "
 
+
+void print_authors_start(){
+
+  printf("\nLibrería gráfica libscreen con soporte para caracteres UTF-8\n");
+  printf("Autores: Pablo Fernández Izquierdo y Pablo Pérez Hernández     Universidad Autónoma de Madrid\n");
+  printf("Licencia: GNU General Public License v3.0\n\n\n");
+  printf("Iniciando libscreen...\n\n\n");
+}
+
+void print_authors_end(){
+
+  printf("\nGracias por usar libscreen\n\n");
+  printf("Librería gráfica libscreen con soporte para caracteres UTF-8\n");
+  printf("Autores: Pablo Fernández Izquierdo y Pablo Pérez Hernández     Universidad Autónoma de Madrid\n");
+  printf("Licencia: GNU General Public License v3.0\n\n");
+}
+
 void area_destroy(Area *area);
 
 typedef struct {
@@ -54,15 +71,12 @@ void screen_init(int rows, int columns){
   screen.columns = columns;
   screen.rows = rows;
   screen.n_areas = 0;
+
+  print_authors_start();
 }
 
 void screen_destroy(){
-  /*
-  int i;
-  for (i = 0; i < screen.n_areas; i++){
-    area_destroy(screen.area[i]);
-  }
-  */
+  print_authors_end();
   return;
 }
 
@@ -174,7 +188,7 @@ void screen_paint(){
           break;
         }
       }
-      /* Caso no area azul : 28,152,243*/
+      /* Caso no area      azul : 28,152,243*/
       if (i_area == screen.n_areas){
         printf(BACKGROUND(250,164,189));
         printf(" ");
@@ -229,32 +243,3 @@ void screen_area_clear(Area *area){
 void screen_area_reset_cursor(Area *area){
   area->cursor = 0;
 }
-
-/*
-int main(){
-
-  Area *a, *b;
-
-  screen_init(10, 20);
-
-  a = screen_area_init(3,3,3,3);
-  b = screen_area_init(7,3,3,3);
-
-  screen_area_puts(a, "a");
-  screen_area_puts(a, "o");
-  screen_area_puts(b, "bbbbb");
-
-  screen_paint();
-
-  screen_area_clear(a);
-
-  screen_area_puts(a, "ooa");
-
-  screen_paint();
-
-  screen_area_destroy(a);
-
-  return 0;
-}
-
-*/
