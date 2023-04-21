@@ -16,7 +16,9 @@
 #define MAX_AREAS 10
 
 #define BACKGROUND(r,g,b) "\x1B[48;2;" #r ";" #g ";" #b "m"
+#define FOREGROUND(r,g,b) "\x1B[38;2;" #r ";" #g ";" #b "m"
 #define RESET "\x1B[0m"
+#define TEXT "\x1B[30m"
 
 #define BLANK "                                                                                                    "
 
@@ -165,10 +167,9 @@ void screen_paint(){
       for (i_area = 0; i_area < screen.n_areas; ++i_area){
         /* Comprobar que hay un area*/
         if (screen.area[i_area]->x == j && i >= screen.area[i_area]->y && i < screen.area[i_area]->y + screen.area[i_area]->height){
-          printf(BACKGROUND(253,253,252));
+          printf(TEXT BACKGROUND(253,253,252));
           n_char = wbstrlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]);
-          printf("%.*s%.*s", (int) strlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]), screen.area[i_area]->character_array[i - screen.area[i_area]->y],screen.area[i_area]->width - n_char, BLANK);
-          printf(RESET);
+          printf(TEXT "%.*s%.*s" RESET, (int) strlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]), screen.area[i_area]->character_array[i - screen.area[i_area]->y],screen.area[i_area]->width - n_char, BLANK);
           j = j + screen.area[i_area]->width - 1;
           break;
         }
