@@ -13,7 +13,7 @@ int main(){
 
   b = screen_area_init(3,3,6,6);
 
-  screen_area_puts(b, "bb"BACKGROUND(0,255,0) FOREGROUND(0,0,255)"bbb");
+  screen_area_puts(b, "bb"BACKGROUND(0,0,255) FOREGROUND(0,255,0)"bbb" BACKGROUND(255,255,255) "a");
 
   screen_paint();
 

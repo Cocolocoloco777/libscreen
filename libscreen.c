@@ -16,11 +16,6 @@
 #define MAX_AREAS 10
 #define LIB_SIZE 8
 
-#define BACKGROUND(r,g,b) "\x1B[48;2;" #r ";" #g ";" #b "m"
-#define FOREGROUND(r,g,b) "\x1B[38;2;" #r ";" #g ";" #b "m"
-#define RESET "\x1B[0m"
-#define TEXT "\x1B[30m"
-
 #define BLANK "                                                                                                    "
 
 
@@ -134,7 +129,7 @@ Area *screen_area_init(int x, int y, int width, int height){
   return area;
 }
 
-int wbstrlen(char *str){
+int screen_multibyte_strlen(char *str){
   int i, count = 0, color_scape_sequence = -1;
   for (i = 0; str[i] != '\0'; i++){
     if (str[i] == '\x1B' && str[i + 1] == '['){
@@ -163,7 +158,7 @@ int wbstrlen(char *str){
   return count;
 }
 
-int wbstrmove(char *str, int x){
+int screen_multibyte_move(char *str, int x){
   int i, count = 0, color_scape_sequence = -1;
 
   for (i = 0; str[i] != '\0' && count < x; i++){
@@ -201,9 +196,9 @@ void screen_paint(){
       for (i_area = 0; i_area < screen.n_areas; ++i_area){
         /* Comprobar que hay un area*/
         if (screen.area[i_area]->x == j && i >= screen.area[i_area]->y && i < screen.area[i_area]->y + screen.area[i_area]->height){
-          printf(FOREGROUND(255,0,0) BACKGROUND(253,253,252));
-          n_char = wbstrlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]);
-          printf(FOREGROUND(255,0,0) "%.*s%.*s" RESET, (int) strlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]), screen.area[i_area]->character_array[i - screen.area[i_area]->y],screen.area[i_area]->width - n_char, BLANK);
+          printf(FOREGROUND(0,0,0) BACKGROUND(253,253,252));
+          n_char = screen_multibyte_strlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]);
+          printf(FOREGROUND(0,0,0) "%.*s%.*s" RESET, (int) strlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]), screen.area[i_area]->character_array[i - screen.area[i_area]->y],screen.area[i_area]->width - n_char, BLANK);
           j = j + screen.area[i_area]->width - 1;
           break;
         }
@@ -221,13 +216,13 @@ void screen_paint(){
 }
 
 void screen_area_puts(Area *area, char *str){
-  int n_char, i, n_lines, j, move, move_ant = 0;
+  int n_char, i, n_lines, j, move;
   char *text;
 
   if (area == NULL || str == NULL)
     return;
 
-  n_char = wbstrlen(str);
+  n_char = screen_multibyte_strlen(str);
 
   n_lines = (n_char / area->width) + ((n_char % area->width) != 0);
 
@@ -240,10 +235,9 @@ void screen_area_puts(Area *area, char *str){
       area->character_array[area->height - 1] = text;
       area->cursor--;
     }
-    move = wbstrmove(str, area->width);
-    snprintf(area->character_array[area->cursor], move - move_ant, "%s", str);
+    move = screen_multibyte_move(str, area->width);
+    snprintf(area->character_array[area->cursor], move + 1, "%s", str);
     str = str + move;
-    move_ant = move;
     area->cursor++;
   }
 }
