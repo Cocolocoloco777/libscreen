@@ -1,28 +1,23 @@
 #include "libscreen.h"
+#include <string.h>
+
+#define BACKGROUND(r,g,b) "\x1B[48;2;" #r ";" #g ";" #b "m"
+#define FOREGROUND(r,g,b) "\x1B[38;2;" #r ";" #g ";" #b "m"
 
 
 int main(){
 
-  Area *a, *b;
+  Area *b;
 
   screen_init(10, 20);
 
-  a = screen_area_init(3,3,3,3);
-  b = screen_area_init(7,3,3,3);
+  b = screen_area_init(3,3,6,6);
 
-  screen_area_puts(a, "a");
-  screen_area_puts(a, "o");
-  screen_area_puts(b, "bbbbb");
+  screen_area_puts(b, "bb"BACKGROUND(0,255,0) FOREGROUND(0,0,255)"bbb");
 
   screen_paint();
 
-  screen_area_clear(a);
-
-  screen_area_puts(a, "ooa");
-
-  screen_paint();
-
-  screen_area_destroy(a);
+  screen_area_destroy(b);
 
   screen_destroy();
 
