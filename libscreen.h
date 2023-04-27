@@ -13,7 +13,7 @@
 
 #define BACKGROUND(r,g,b) "\x1B[48;2;" #r ";" #g ";" #b "m"
 #define FOREGROUND(r,g,b) "\x1B[38;2;" #r ";" #g ";" #b "m"
-#define RESET "\x1B[0m"
+#define RESET FOREGROUND(0,0,0) BACKGROUND(253,253,252)
 
 /**
   * @brief Screen area for displaying information

@@ -17,6 +17,8 @@ int main(){
 
   screen_paint();
 
+  printf("%d", screen_multibyte_strlen("bàààà"));
+
   screen_area_destroy(b);
 
   screen_destroy();
