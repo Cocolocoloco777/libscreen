@@ -16,7 +16,7 @@
 #define MAX_AREAS 10
 #define LIB_SIZE 8
 
-#define BLANK "                                                                                                    "
+#define BLANK "                                                                                                                                                                                                        "
 #define RESET "\x1b[0m"
 
 void print_authors_start(){
