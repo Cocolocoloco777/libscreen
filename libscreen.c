@@ -17,13 +17,12 @@
 #define LIB_SIZE 8
 
 #define BLANK "                                                                                                    "
-
+#define RESET "\x1b[0m"
 
 void print_authors_start(){
 
   printf("\nLibrería gráfica libscreen con soporte para caracteres UTF-8\n");
   printf("Autores: Pablo Fernández Izquierdo y Pablo Pérez Hernández     Universidad Autónoma de Madrid\n");
-  printf("Licencia: GNU General Public License v3.0\n\n\n");
   printf("Iniciando libscreen...\n\n\n");
 }
 
@@ -31,8 +30,7 @@ void print_authors_end(){
 
   printf("\nGracias por usar libscreen\n\n");
   printf("Librería gráfica libscreen con soporte para caracteres UTF-8\n");
-  printf("Autores: Pablo Fernández Izquierdo y Pablo Pérez Hernández     Universidad Autónoma de Madrid\n");
-  printf("Licencia: GNU General Public License v3.0\n\n");
+  printf("Autores: Pablo Fernández Izquierdo y Pablo Pérez Hernández     Universidad Autónoma de Madrid\n\n\n");
 }
 
 void area_destroy(Area *area);
@@ -207,11 +205,10 @@ void screen_paint(){
       if (i_area == screen.n_areas){
         printf(BACKGROUND(250,164,189));
         printf(" ");
-        printf(RESET);
       }
     }
 
-    printf("\n");
+    printf(RESET "\n");
   }
 }
 
