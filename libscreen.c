@@ -160,7 +160,7 @@ int screen_multibyte_move(char *str, int x){
   int i, count = 0, color_scape_sequence = -1;
 
   for (i = 0; str[i] != '\0' && count < x; i++){
-    if (str[i] == '\x1B' && str[i + 1] == '['){
+    if (str[i] == '\x1B'){
       color_scape_sequence = i;
       continue;
     } else if (color_scape_sequence != -1){
@@ -183,6 +183,13 @@ int screen_multibyte_move(char *str, int x){
     }
   }
 
+  while (str[i] == '\x1B'){
+    while (str[i] != '\0' && str[i] != 'm'){
+      i++;
+    }
+    i++;    
+  }
+
   return i;
 }
 
@@ -201,9 +208,9 @@ void screen_paint(){
           break;
         }
       }
-      /* Caso no area      azul : 28,152,243*/
+      /* Caso no area      azul : 28,152,243 rosa sus: 250,164,189*/ 
       if (i_area == screen.n_areas){
-        printf(BACKGROUND(250,164,189));
+        printf(BACKGROUND(74,119,41));
         printf(" ");
       }
     }
