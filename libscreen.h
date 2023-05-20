@@ -85,13 +85,14 @@ void screen_area_destroy(Area *area);
 void screen_area_clear(Area *area);
 
 /**
-  * @brief It resets the cursor of an area
+  * @brief It sets the cursor of an area
   * @author Pablo Fernández y Pablo Pérez
   *
   * This function reset the cursor to the up-left corner of the area.
   * @param area the involved area
+  * @param new_cursor an integer indicating the new cursor
   */
-void screen_area_reset_cursor(Area *area);
+void screen_area_set_cursor(Area *area, int new_cursor);
 
 /**
   * @brief It introduces some information inside an area

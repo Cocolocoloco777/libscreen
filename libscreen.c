@@ -2,7 +2,7 @@
   * @brief It implements the screen interface
   *
   * @file libscreen.c
-  * @author Plablos
+  * @author Pablo Fernández y Pablo Pérez
   * @version 2.0
   * @date 20-04-2023
   * @copyright GNU Public License
@@ -17,7 +17,52 @@
 #define LIB_SIZE 8
 
 #define BLANK "                                                                                                                                                                                                        "
-#define RESET "\x1b[0m"
+#define TERMINAL_RESET "\x1b[0m"
+
+/* Private functions */
+
+/**
+  * @brief It prints the libscreen information at the beggining
+  * @author Pablo Fernández y Pablo Pérez
+  */
+void print_authors_start();
+
+/**
+  * @brief It prints the libscreen information at the end
+  * @author Pablo Fernández y Pablo Pérez
+  */
+void print_authors_end();
+
+/**
+ * @brief Screen structure
+ *
+ * This struct stores all the information of an screen.
+ */
+typedef struct {
+  Area *area[MAX_AREAS];  /*!< An array of areas */
+  int n_areas;            /*!< The number of areas in the array */
+  int rows;               /*!< Number of rows in the screen */
+  int columns;            /*!< Number of columns in the screen */
+                        
+} Screen; 
+
+/**
+ * @brief Area structure
+ *
+ * This struct stores all the information of an area.
+ */
+struct _Area {
+  char **string_array;  /*!< An array of strings */
+  int *string_len;      /*!< It stores the length of the strings */
+  int x;                /*!< x coordinate of the position in the screen */
+  int y;                /*!< y coordinate of the position in the screen */
+  int width;            /*!< The width of the area */
+  int height;           /*!< The height of the area */
+  int cursor;           /*!< Position of the cursor */
+  int screen_id;        /*!< The position of the area in the screen */            
+};
+
+Screen screen;
 
 void print_authors_start(){
 
@@ -33,32 +78,11 @@ void print_authors_end(){
   printf("Autores: Pablo Fernández Izquierdo y Pablo Pérez Hernández     Universidad Autónoma de Madrid\n\n\n");
 }
 
-void area_destroy(Area *area);
-
-typedef struct {
-  Area *area[MAX_AREAS];
-  int n_areas;
-  int rows;
-  int columns;
-                        
-} Screen; 
-
-struct _Area {
-  char **character_array;
-  char *free_character;
-  int x;
-  int y;  
-  int width;
-  int height;
-  int cursor;                      
-};
-
-Screen screen;
-
 void screen_init(int rows, int columns){
 
   /* Error control */
   if ( rows <= 0 || columns <= 0){
+    fprintf(stderr, "SCREEN ERROR Error in screen init: invalid parameters\n");
     return;
   }
 
@@ -71,84 +95,154 @@ void screen_init(int rows, int columns){
 
 void screen_destroy(){
   print_authors_end();
-  return;
-}
-
-void screen_area_destroy(Area *area){
-
-  if (area == NULL){
-    return;
-  }
-
-  /* Modificar */
-
-  free(area->free_character);
-  free(area->character_array);
-  free(area);
 }
 
 Area *screen_area_init(int x, int y, int width, int height){
-  char *characters;
   Area *area = NULL;
-  int i;  
+  int i, j;  
 
-  area = malloc(sizeof(Area));
-  if (area == NULL){
+  /* Error control */
+  if (x < 0 || y < 0 || width <= 0 || height <= 0){
+    fprintf(stderr, "SCREEN ERROR Error in screen area init: invalid parameters\n");
     return NULL;
   }
 
-  characters = (char*) malloc(LIB_SIZE * height *(width + 1)*sizeof(char));
-  if (characters == NULL){
+  /* Check if there is space available */
+  if (screen.n_areas == MAX_AREAS){
+    fprintf(stderr, "SCREEN ERROR Error in screen area init: maximum number of areas reached\n");
+    return NULL;
+  }
+
+  /* Allocates memory */
+  area = malloc(sizeof(Area));
+  if (area == NULL){
+    fprintf(stderr, "SCREEN ERROR Error in screen area init: unable to allocate memory\n");
+    return NULL;
+  }
+
+  /* Allocates memory for the array of lengths */
+  area->string_len = (int*) malloc(height*sizeof(int));
+  if (area->string_len == NULL){
+    fprintf(stderr, "SCREEN ERROR Error in screen area init: unable to allocate memory\n");
     free(area);
     return NULL;
   }
+  
+  /* Initializes the array of lengths */
+  for (i = 0; i < height; i++){
+    area->string_len[i] = width + 1;
+  }
 
-  area->character_array = (char**) malloc(height*sizeof(char*));
-  if (area->character_array == NULL){
-    free(characters);
+  /* Allocates memory for the string array */
+  area->string_array = (char**) malloc(height*sizeof(char*));
+  if (area->string_array == NULL){
+    fprintf(stderr, "SCREEN ERROR Error in screen area init: unable to allocate memory\n");
+    free(area);
+    free(area->string_len);
     return NULL;
   }
 
-  for(i = 0; i < height; i++){
-    area->character_array[i] = characters + LIB_SIZE * (width + 1) * i;
-    area->character_array[i][0] = '\0';
+  /* Allocates memory for the strings */
+  for (i = 0; i < height; i++){
+
+    area->string_array[i] = malloc((width + 1)*sizeof(char));
+
+    /* Error control */
+    if (area->string_array[i] == NULL){
+      for (j = 0; j < i; j++){
+        free(area->string_array[j]);
+      }
+
+      free(area);
+      free(area->string_len);
+      free(area->string_array);
+    }
+
+    /* Initialises the strings */
+    area->string_array[i][0] = '\0';
   }
 
+  /* Initialises parameters */
   area->x = x;
   area->y = y;
   area->width = width;
   area->height = height;
   area->cursor = 0;
-  area->free_character = characters;
 
+  /* Adds the area to the screen */
   screen.area[screen.n_areas] = area;
+  area->screen_id = screen.n_areas;
   screen.n_areas++;
 
   return area;
 }
 
+void screen_area_destroy(Area *area){
+  int i;
+
+  /* Error control */
+  if (area == NULL){
+    fprintf(stderr, "SCREEN ERROR Error in screen destroy: invalid parameters\n");
+    return;
+  }
+
+  /* Deletes from the screen */
+  if (screen.area[area->screen_id] == area){
+    screen.area[area->screen_id] = screen.area[screen.n_areas - 1];
+    screen.area[area->screen_id]->screen_id = area->screen_id;
+    screen.n_areas--;
+  } else {
+    fprintf(stderr, "SCREEN ERROR error in screen area destroy: area not in screen\n");
+    return;
+  }
+  
+
+  /* Frees the strings */
+  for (i = 0; i < area->height; i++){
+    if (area->string_array[i] != NULL){
+      free(area->string_array[i]);
+    }
+  }
+
+  /* Frees the string array and its length */
+  free(area->string_array);
+  free(area->string_len);
+
+  /* Frees the area */
+  free(area);
+}
+
 int screen_multibyte_strlen(char *str){
-  int i, count = 0, color_scape_sequence = -1;
+  int i, count = 0, color_code = -1;
+
+  /* Error control */
+  if (str == NULL){
+    return -1;
+  }
+
+  /* Iterates the string */
   for (i = 0; str[i] != '\0'; i++){
+
+    /* Color code case (it doesnt count it)*/
     if (str[i] == '\x1B' && str[i + 1] == '['){
-      color_scape_sequence = i;
+      color_code = i;
       continue;
-    } else if (color_scape_sequence != -1){
+    } else if (color_code != -1){
       if (str[i] == 'm'){
-        color_scape_sequence = -1;
+        color_code = -1;
       }
       continue;
     }
 
-    if ((str[i] & 0x80) == 0){
+    if ((str[i] & 0x80) == 0){ /* One byte case */
       count ++;
-    } else if ((str[i] & 0xE0) == 0xC0){
+    } else if ((str[i] & 0xE0) == 0xC0){ /* Two byte case */
       count ++;
       i++;
-    } else if ((str[i] & 0xF0) == 0xE0){
+    } else if ((str[i] & 0xF0) == 0xE0){ /* Three byte case */
       count ++;
       i+= 2;
-    } else {
+    } else { /* Four byte case */
       count ++;
       i+= 3;
     }
@@ -157,32 +251,42 @@ int screen_multibyte_strlen(char *str){
 }
 
 int screen_multibyte_move(char *str, int x){
-  int i, count = 0, color_scape_sequence = -1;
+  int i, count = 0, color_code = -1;
 
+  /* Error control */
+  if (str == NULL || x < 0){
+    return -1;
+  }
+
+  /* Iterates the string */
   for (i = 0; str[i] != '\0' && count < x; i++){
+
+    /* Color code case */
     if (str[i] == '\x1B'){
-      color_scape_sequence = i;
+      color_code = i;
       continue;
-    } else if (color_scape_sequence != -1){
+    } else if (color_code != -1){
       if (str[i] == 'm'){
-        color_scape_sequence = -1;
+        color_code = -1;
       }
       continue;
     }
-    if ((str[i] & 0x80) == 0){
+
+    if ((str[i] & 0x80) == 0){ /* One byte case */
       count ++;
-    } else if ((str[i] & 0xE0) == 0xC0){
+    } else if ((str[i] & 0xE0) == 0xC0){ /* Two byte case */
       count ++;
       i++;
-    } else if ((str[i] & 0xF0) == 0xE0){
+    } else if ((str[i] & 0xF0) == 0xE0){ /* Three byte case */
       count ++;
       i+= 2;
-    } else {
+    } else { /* Four byte case */
       count ++;
       i+= 3;
     }
   }
 
+  /* Color codes at the end */
   while (str[i] == '\x1B'){
     while (str[i] != '\0' && str[i] != 'm'){
       i++;
@@ -196,51 +300,87 @@ int screen_multibyte_move(char *str, int x){
 void screen_paint(){
   int i, j, i_area, n_char;
 
+  /* Scan each row and column */
   for (i = 0; i < screen.rows; i++){
     for (j = 0; j < screen.columns; j++){
       for (i_area = 0; i_area < screen.n_areas; ++i_area){
-        /* Comprobar que hay un area*/
+        
+        /* Check if there is an area starting at this column */
         if (screen.area[i_area]->x == j && i >= screen.area[i_area]->y && i < screen.area[i_area]->y + screen.area[i_area]->height){
+
+          /* Changes terminal color to area color */
           printf(FOREGROUND(0,0,0) BACKGROUND(253,253,252));
-          n_char = screen_multibyte_strlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]);
-          printf(FOREGROUND(0,0,0) "%.*s%.*s" RESET, (int) strlen(screen.area[i_area]->character_array[i - screen.area[i_area]->y]), screen.area[i_area]->character_array[i - screen.area[i_area]->y],screen.area[i_area]->width - n_char, BLANK);
+
+          /* Gets the length (in characters) of the string to paint*/
+          n_char = screen_multibyte_strlen(screen.area[i_area]->string_array[i - screen.area[i_area]->y]);
+
+          /* Paints the string and fills the whats left with spaces */
+          printf("%.*s%.*s" TERMINAL_RESET, (int) strlen(screen.area[i_area]->string_array[i - screen.area[i_area]->y]), screen.area[i_area]->string_array[i - screen.area[i_area]->y],screen.area[i_area]->width - n_char, BLANK);
+
+          /* Jumps to the end of the area line */
           j = j + screen.area[i_area]->width - 1;
           break;
         }
       }
-      /* Caso no area      azul : 28,152,243 rosa sus: 250,164,189*/ 
+      
+      /* No areas */
       if (i_area == screen.n_areas){
-        printf(BACKGROUND(74,119,41));
-        printf(" ");
+        printf(BACKGROUND(74,119,41) " ");
       }
     }
 
-    printf(RESET "\n");
+    /* Resets the color of the terminal */
+    printf(TERMINAL_RESET "\n");
   }
 }
 
 void screen_area_puts(Area *area, char *str){
   int n_char, i, n_lines, j, move;
-  char *text;
+  char *text, *realloc_string;
 
-  if (area == NULL || str == NULL)
+  /* Error control */
+  if (area == NULL || str == NULL){
+    fprintf(stderr, "SCREEN ERROR Error in screen area puts: invalid area or string\n");
     return;
-
+  }
+    
+  /* Gets the len in characters */
   n_char = screen_multibyte_strlen(str);
 
+  /* Calculates the number of lines to be written */
   n_lines = (n_char / area->width) + ((n_char % area->width) != 0);
 
+  /* Writes the string in the area string/s*/
   for (i = 0; i < n_lines; i++){
+
+    /* If the area is full of strings moves all area strings up one */
     if (area->cursor == area->height){
-      text = area->character_array[0];
+      text = area->string_array[0];
       for (j = 0; j < area->height - 1; j++){
-        area->character_array[j] = area->character_array[j + 1];
+        area->string_array[j] = area->string_array[j + 1];
       }
-      area->character_array[area->height - 1] = text;
+      area->string_array[area->height - 1] = text;
       area->cursor--;
     }
+
+    /* Gets the size (in bytes) of the string*/
     move = screen_multibyte_move(str, area->width);
-    snprintf(area->character_array[area->cursor], move + 1, "%s", str);
+
+    /* It reallocs the string if it doesnt fit */
+    if (move >= area->string_len[area->cursor]){
+      realloc_string = realloc(area->string_array[area->cursor], move + 1);
+      if (realloc_string == NULL){
+        fprintf(stderr, "SCREEN ERROR Error in screen area puts: unable to allocate memory\n");
+        return;
+      }
+      area->string_array[area->cursor] = realloc_string;
+      area->string_len[area->cursor] = move + 1;
+    }
+    
+    /* Writes the string */
+    sprintf(area->string_array[area->cursor], "%.*s", move + 1, str);
+
+    /* Moves cursor to next line */
     str = str + move;
     area->cursor++;
   }
@@ -249,16 +389,33 @@ void screen_area_puts(Area *area, char *str){
 void screen_area_clear(Area *area){
   int i;
 
-  if (area == NULL)
+  /* Error control */
+  if (area == NULL){
+    fprintf(stderr, "SCREEN ERROR Error in screen area clear: invalid area\n");
     return;
-
+  }
+  
+  /* Resets the strings */
   for (i = 0; i < area->height; i++){
-    area->character_array[i][0] = '\0';
+    area->string_array[i][0] = '\0';
   }
 
+  /* Resets the cursor */
   area->cursor = 0;
 }
 
-void screen_area_reset_cursor(Area *area){
-  area->cursor = 0;
+void screen_area_set_cursor(Area *area, int new_cursor){
+
+  /* Error control */
+  if (area == NULL){
+    fprintf(stderr, "SCREEN ERROR Error in screen area set cursor: invalid area\n");
+    return;
+  }
+
+  if (new_cursor < 0 || new_cursor >= area->height){
+    fprintf(stderr, "SCREEN ERROR Error in screen area clear: invalid cursor\n");
+    return;
+  }
+
+  area->cursor = new_cursor;
 }
