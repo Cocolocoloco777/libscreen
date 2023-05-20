@@ -113,6 +113,11 @@ Area *screen_area_init(int x, int y, int width, int height){
     return NULL;
   }
 
+  if (x + width > screen.columns || y + height > screen.rows){
+    fprintf(stderr, "SCREEN ERROR Error in screen area init: area too large\n");
+    return NULL;
+  }
+
   /* Allocates memory */
   area = malloc(sizeof(Area));
   if (area == NULL){
