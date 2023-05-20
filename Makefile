@@ -1,4 +1,4 @@
-CFLAGS = -ansi -pedantic -Wall -DDEBUG
+CFLAGS = -ansi -pedantic -Wall -g -DDEBUG
 CC = gcc
 
 
