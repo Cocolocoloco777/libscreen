@@ -5,7 +5,7 @@ libscreen is a terminal-based graphic library capable of showing text organized 
 
 ## Interacting with the library
 
-libscreen works using two data structures: screens and areas. Screens show the background and hold inside of them the areas. Areas are where text is written. 
+libscreen works using two data structures: screens and areas. Screens show the background and hold inside of them the areas. Only on screen at the same time is supported. Areas are where text is written. 
 
 ### libscreen functions
 
