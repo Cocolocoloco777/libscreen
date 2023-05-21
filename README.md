@@ -47,6 +47,14 @@ libscreen works using two data structures: screens and areas. Screens show the b
 
     Return the number of bytes if you move `x` characters, color codes does not count as characters.
 
++ `screen_sprint_background_color_code`
+
+    It prints a background color code into a string.
+
++ `screen_sprint_foreground_color_code`
+
+    It prints a foreground color code into a string.
+
 ### makefile
 
 + `build`
