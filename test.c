@@ -9,8 +9,9 @@
 int main(){
 
   Area *b;
+  Color af = {0,0,0}, ab = {255,255,255}, sb = {74,100,40};
 
-  screen_init(10, 20);
+  screen_init(10, 20, af, ab, sb);
 
   b = screen_area_init(3,3,6,6);
 
