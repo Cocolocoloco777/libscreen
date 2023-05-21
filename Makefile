@@ -1,15 +1,14 @@
-CFLAGS = -ansi -pedantic -Wall -g -DDEBUG
+CFLAGS = -ansi -pedantic -Wall
 CC = gcc
+LIBNAME = libscreen
+TEST_EXE = test
 
 
 build: libscreen.o
-	ar r libscreen.a libscreen.o
-
-test: build_test
-	./build_test
+	ar r $(LIBNAME).a libscreen.o
 
 build_test: test.o libscreen.o
-	$(CC) -o $@ $^
+	$(CC) -o $(TEST_EXE) $^
 
 libscreen.o: libscreen.c libscreen.h
 	$(CC) $(CFLAGS) -o $@ -c $< 
@@ -17,5 +16,8 @@ libscreen.o: libscreen.c libscreen.h
 test.o: test.c libscreen.h
 	$(CC) $(CFLAGS) -o $@ -c $< 
 
+run_test: build_test
+	./$(TEST_EXE)
+
 clean:
-	rm -f *.o *.a build_test
+	rm -f *.o *.a $(TEST_EXE)
