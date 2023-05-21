@@ -426,7 +426,7 @@ void screen_area_puts(Area *area, char *str){
     }
     
     /* Writes the string */
-    sprintf(area->string_array[area->cursor], "%.*s", move + 1, str);
+    sprintf(area->string_array[area->cursor], "%.*s", move, str);
 
     /* Moves cursor to next line */
     str = str + move;
