@@ -13,11 +13,10 @@
 #include <string.h>
 #include "libscreen.h"
 
-#define MAX_AREAS 10
-#define LIB_SIZE 8
+#define MAX_AREAS 10  /*!< The maximum number of areas */
 
 #define BLANK "                                                                                                                                                                                                        "
-#define TERMINAL_RESET "\x1b[0m"
+#define TERMINAL_RESET "\x1b[0m"  /*!< Code to reset the color */
 
 /* Private functions */
 
@@ -39,10 +38,13 @@ void print_authors_end();
  * This struct stores all the information of an screen.
  */
 typedef struct {
-  Area *area[MAX_AREAS];  /*!< An array of areas */
-  int n_areas;            /*!< The number of areas in the array */
-  int rows;               /*!< Number of rows in the screen */
-  int columns;            /*!< Number of columns in the screen */
+  Area *area[MAX_AREAS];    /*!< An array of areas */
+  int n_areas;              /*!< The number of areas in the array */
+  int rows;                 /*!< Number of rows in the screen */
+  int columns;              /*!< Number of columns in the screen */
+  Color area_foreground;    /*!< Foreground color of the areas */
+  Color area_background;    /*!< Background color of the areas */
+  Color screen_background;  /*!< Background color of the screen */
                         
 } Screen; 
 
@@ -78,7 +80,7 @@ void print_authors_end(){
   printf("Autores: Pablo Fernández Izquierdo y Pablo Pérez Hernández     Universidad Autónoma de Madrid\n\n\n");
 }
 
-void screen_init(int rows, int columns){
+void screen_init(int rows, int columns, Color area_foreground, Color area_background, Color screen_background){
 
   /* Error control */
   if ( rows <= 0 || columns <= 0){
@@ -86,9 +88,15 @@ void screen_init(int rows, int columns){
     return;
   }
 
+  /* Initialises screen parameters */
   screen.columns = columns;
   screen.rows = rows;
   screen.n_areas = 0;
+
+  /* Initialises screen colors */
+  screen.area_background = area_background;
+  screen.area_foreground = area_foreground;
+  screen.screen_background = screen_background;
 
   print_authors_start();
 }
@@ -314,7 +322,8 @@ void screen_paint(){
         if (screen.area[i_area]->x == j && i >= screen.area[i_area]->y && i < screen.area[i_area]->y + screen.area[i_area]->height){
 
           /* Changes terminal color to area color */
-          printf(FOREGROUND(0,0,0) BACKGROUND(253,253,252));
+          printf("\x1B[48;2;%d;%d;%dm", screen.area_background.r, screen.area_background.g, screen.area_background.b);
+          printf("\x1B[38;2;%d;%d;%dm", screen.area_foreground.r, screen.area_foreground.g, screen.area_foreground.b);
 
           /* Gets the length (in characters) of the string to paint*/
           n_char = screen_multibyte_strlen(screen.area[i_area]->string_array[i - screen.area[i_area]->y]);
@@ -330,7 +339,7 @@ void screen_paint(){
       
       /* No areas */
       if (i_area == screen.n_areas){
-        printf(BACKGROUND(74,119,41) " ");
+        printf("\x1B[48;2;%d;%d;%dm" " ", screen.screen_background.r, screen.screen_background.g, screen.screen_background.b);
       }
     }
 

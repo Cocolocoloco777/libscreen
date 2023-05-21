@@ -13,7 +13,17 @@
 
 #define BACKGROUND(r,g,b) "\x1B[48;2;" #r ";" #g ";" #b "m"
 #define FOREGROUND(r,g,b) "\x1B[38;2;" #r ";" #g ";" #b "m"
-#define RESET FOREGROUND(0,0,0) BACKGROUND(253,253,252)
+/*#define RESET FOREGROUND(0,0,0) BACKGROUND(253,253,252)*/
+
+/**
+ * @brief Color structure
+ *
+ * This struct stores all the information of an color.
+ */
+typedef struct {
+  int r, g, b;    /*!< Color represented in RGB format */
+                        
+} Color;
 
 /**
   * @brief Screen area for displaying information
@@ -29,8 +39,11 @@ typedef struct _Area Area;
   *  so the complete screen is allocated before starting defining areas.
   * @param rows the number of rows that will have the full screen
   * @param columns the number of columns that will have the full screen
+  * @param area_foreground foreground color of the areas
+  * @param area_background background color of the areas
+  * @param screen_background background color of the screen
   */
-void screen_init(int rows, int columns);
+void screen_init(int rows, int columns, Color area_foreground, Color area_background, Color screen_background);
 
 /**
   * @brief It destroys a new screen area
