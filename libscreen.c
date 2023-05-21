@@ -225,6 +225,18 @@ void screen_area_destroy(Area *area){
   free(area);
 }
 
+void screen_set_area_foreground_color(Color color){
+  screen.area_foreground = color;
+}
+
+void screen_set_area_background_color(Color color){
+  screen.area_background = color;
+}
+
+void screen_set_screen_background_color(Color color){
+  screen.screen_background = color;
+}
+
 int screen_multibyte_strlen(char *str){
   int i, count = 0, color_code = -1;
 
@@ -308,6 +320,28 @@ int screen_multibyte_move(char *str, int x){
   }
 
   return i;
+}
+
+int screen_sprint_background_color_code(char *str, Color color){
+
+  /* Error control */
+  if (str == NULL){
+    return -1;
+  }
+
+  /* Sprints the color code */
+  return sprintf(str, "\x1B[48;2;%d;%d;%dm", screen.area_background.r, screen.area_background.g, screen.area_background.b);
+}
+
+int screen_sprint_foreground_color_code(char *str, Color color){
+
+  /* Error control */
+  if (str == NULL){
+    return -1;
+  }
+
+  /* Sprints the color code */
+  return sprintf(str, "\x1B[38;2;%d;%d;%dm", screen.area_background.r, screen.area_background.g, screen.area_background.b);
 }
 
 void screen_paint(){

@@ -88,6 +88,29 @@ Area *screen_area_init(int x, int y, int width, int height);
 void screen_area_destroy(Area *area);
 
 /**
+  * @brief It sets the foreground color of the areas
+  * @author Pablo Fernández y Pablo Pérez
+  *
+  * @param color the color to set
+  */
+void screen_set_area_foreground_color(Color color);
+
+/**
+  * @brief It sets the background color of the areas
+  * @author Pablo Fernández y Pablo Pérez
+  *
+  * @param color the color to set
+  */
+void screen_set_area_background_color(Color color);
+
+/**
+  * @brief It sets the background color of the screen
+  * @author Pablo Fernández y Pablo Pérez
+  *
+  * @param color the color to set
+  */
+void screen_set_screen_background_color(Color color);
+/**
   * @brief It cleares an area, eraising all its content
   * @author Pablo Fernández y Pablo Pérez
   *
@@ -135,5 +158,23 @@ int screen_multibyte_strlen(char *str);
   * @return the size (bytes) of moving x positions in the array
   */
 int screen_multibyte_move(char *str, int x);
+
+/**
+  * @brief It prints a background color code into a string 
+  * @author Pablo Fernández y Pablo Pérez
+  *
+  * @param color the color to print
+  * @return the bytes/characters printed or -1 if an error ocurred
+  */
+int screen_sprint_background_color_code(char *str, Color color);
+
+/**
+  * @brief It prints a foreground color code into a string 
+  * @author Pablo Fernández y Pablo Pérez
+  *
+  * @param color the color to print
+  * @return the bytes/characters printed or -1 if an error ocurred
+  */
+int screen_sprint_foreground_color_code(char *str, Color color);
 
 #endif
